@@ -1,0 +1,100 @@
+﻿@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<form id="formParams">
+    <div class="params">
+        <label>Subreddit:&nbsp;</label><span style="color:red;margin-right:5px;">*</span><input class="form-control form-control-sm" type="text" placeholder="Subreddit" id="subReddit" value="wallstreetbets" name="subReddit" required="required">
+        <label>Limit:&nbsp;</label><span style="color:red;margin-right:5px;">*</span><input class="form-control form-control-sm" type="number" min="1" max="100" placeholder="No of records" value="100" id="number" name="number" required="required">
+        <a class="btn-primary btn-sm" id="search" href="#" name="search">Search</a>
+    </div>
+</form>
+<div class="row">
+    <div class="col-10">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Posts</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Top Posts</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                <div id="posts">
+                    Loading please wait...
+                </div>
+            </div>
+            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                <div id="topPosts">
+                    No records found
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-2">
+        <span style="color:red;">Top Users</span>
+        <div id="users" style="font-size:11px;margin-top:20px;">
+        </div>
+    </div>
+</div>
+@section scripts {
+<script type="text/javascript">
+    $(document).ready(function(){
+        post();
+        setInterval(post, 60000);
+
+        function post(){
+             var url = '@Url.Action("Posts", "Home")';
+             url = $("#subReddit").val() ? url+"?subReddits="+$("#subReddit").val() : url+"?subReddits=wallstreetbets";
+             url = $("#number").val() ? url+"&limit="+$("#number").val() : url + "&limit=100";
+
+             $.get(url, function(data, status){
+                 if(data){
+                     setPosts(data.posts);
+                     setTopPosts(data.topPosts);
+                     setTopUsers(data.topUsers);
+                 }
+                 else{
+                     console.log("Something went wrong");
+                 }
+          }).fail(function(error){
+              window.location.href = "@Url.Action("Error", "Home")?message=Reddit API Failed see log for more details";
+          })
+        };
+        function setPosts(posts){
+            $("#posts").html('');
+            $.each(posts, function(i, v){
+                 createDiv(v, "#posts");
+             })
+        };
+        function setTopPosts(posts){
+            $("#topPosts").html('');
+            $.each(posts, function(i, v){
+                 createDiv(v, "#topPosts");
+             });
+        };
+        function createDiv(v, id){
+             var img = $("<div style='max-width:900px; max-height:600px;'><img style='max-width:900px; max-height:600px;' src='"+v.ImageURL+"'/></div>");
+             var div = $("<div style='border:#afd8e0 1px solid;border-radius:5px;margin:5px;padding:10px;'></div>").append($('<div>').html(v.Title))
+                 .append($('<p>').html(v.Content)).append($('<div>').html(v.PostedDate)).append(img);
+              $(id).prepend(div);
+        };
+        function setTopUsers(list){
+            var ul = $('<ul class="list-group"></ul>');
+            $.each(list, function(i, v){
+               var li =  '<li class="list-group-item">'+v.user+'</li>';
+                ul.append(li);
+             });
+             $("#users").html(ul);
+        };
+        $("#number").change(function(){
+            if(!$(this).val()) $("#number").val("100");
+            if($(this).val() > 100 || $(this).val() < 1) $("#number").val("100");
+        })
+        $("#search").click(function(){
+            post();
+        })
+    });
+</script>
+}
