@@ -12,3 +12,4 @@ By default, a portal screen will be loaded with the 100 latest posts from wallst
 You have an option to change the subreddit or number of posts on the text box field location on the top of the screen, hit search to get the result.
 
 Note: If you would like to change ClientId/SecretKey/RedirectUrl, please go to the appsettings.json file location under RedditApp\Reddit.Web
+Working model is available here:  https://test.mrbenb.com/
